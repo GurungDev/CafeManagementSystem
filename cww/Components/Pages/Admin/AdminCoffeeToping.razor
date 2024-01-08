@@ -1,0 +1,103 @@
+﻿@page "/admin/coffeeTopings"
+ 
+@using cww.Components.Pages.Topings
+ @layout cww.Components.Layout.AdminLayout
+
+@using static Resources.common.Common
+ 
+
+<div class="body home-page">
+
+    <div>
+        <h2 class="title">  Coffee Add-ins </h2>
+        <form class="forms">
+            <label for="Name">Name</label>
+            <input type="text" placeholder="Name" @bind="Name">
+            <label for="Price">Price</label>
+            <input type="number" placeholder="Price" @bind="Price">
+        </form>
+        <div class="btnGroup">
+            <button @onclick="PostFunction">Create Coffee Add-ins </button>
+
+            <button @onclick="GetcoffeeTopingss">
+                @{
+                    if (getcoffeeTopings)
+                    {
+                        <span>Hide  Coffee Add-ins</span>
+                    }
+                    else
+                    {
+
+                        <span>Display  Coffee Add-ins</span>
+                    }
+                }
+            </button>
+        </div>
+   </div>
+
+</div>
+
+@if (getcoffeeTopings)
+{
+
+    <div class="display_section">
+        <h2>Coffee Add-ins List</h2>
+        <div class="custom_table">
+            <div class="header">
+                <span>Name </span>
+                <span> Price </span>
+            </div>
+            @foreach (ToppingEntity coffeeTopings in coffeeTopingsList)
+            {
+                <div class="rows">
+                    <span>@coffeeTopings.Name </span>
+                    <span>@coffeeTopings.Price </span>
+                </div>
+            }
+        </div>
+
+    </div>
+
+}
+ 
+@code {
+    public string Name ="";
+    public int Price = 0;
+    public bool getcoffeeTopings;
+    public List<ToppingEntity> coffeeTopingsList = ToppingController.Loadtoppings();
+ 
+
+    public void PostFunction()
+    {
+    
+        try
+        {
+           
+            if (Name== "" || Price == 0)
+            {
+                throw new Exception("Please fill out all fields.");
+
+            }
+          
+            ToppingController.Createtopping(Name, Price);
+            ToastMessage("coffeeTopings registration Success.");
+            clearFields();
+        }
+        catch (Exception ex)
+        {
+            clearFields();
+            ToastMessage(ex.Message ?? "coffeeTopings registration failed." );
+        }
+    }
+
+    private void GetcoffeeTopingss()
+    {
+        coffeeTopingsList = ToppingController.Loadtoppings();
+        getcoffeeTopings = !getcoffeeTopings;
+    }
+    private void clearFields()
+    {
+        Name = "";
+        Price = 0;
+    }
+}

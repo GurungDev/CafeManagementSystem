@@ -1,0 +1,113 @@
+﻿@page "/login/staff"
+ 
+@using static cww.Resources.common.Common 
+@using CommunityToolkit.Maui.Alerts;
+@using CommunityToolkit.Maui.Core;
+@using cww.Components.Pages.Coffee
+@inject NavigationManager nm
+
+  <style media="screen">
+    .home-page {
+        display: flex;
+        width: 100%;
+        height: 90vh;
+        align-items: center;
+        justify-content: center;
+        
+    }
+
+    .title {
+        font-size: 4rem;
+       
+        text-align: center;
+        font-weight: 500;
+    }
+
+
+    </style>
+
+ 
+
+
+
+ @if (staffnumber <= 0)
+  {
+    <div class="body home-page">
+
+         
+            <h2>No Staff in the system</h2>
+
+
+        <NavLink class="nav-link" href="/">
+            <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Home
+        </NavLink>
+
+    </div>
+}
+else
+{
+    <div class="body home-page">
+        <div>
+            <h2 class=" title">Staff Login</h2>
+            <form class="forms">
+                <label for="userName">User Name</label>
+                <input type="text" placeholder="UserName" @bind="UserName">
+                <label for="password">Password</label>
+                <input type="password" placeholder="Password" @bind="Password">
+
+            </form>
+            <button @onclick="Login" class="form-button">Log In</button>
+        </div>
+    </div>
+}
+
+@code {
+    public string UserName;
+    public string Password;
+    StaffController StaffController = new StaffController();
+    int staffnumber = StaffController.GetStaffNumber();
+    
+    
+    public void Login()
+    {
+        try
+        { 
+            if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
+            {
+                throw new Exception("Please fill out all fields.");
+
+            }
+            List<StaffEntity>  staffs = StaffController.Loadstaffs();
+            
+            StaffEntity staff = staffs.Find(staff => staff.UserName.Equals(UserName, StringComparison.OrdinalIgnoreCase));
+           
+
+            if (staff == null)
+            {
+                throw new Exception("Staff Not found");
+            }
+
+            if (!staff.Password.Equals(HashPassword(Password)))
+            {
+                throw new Exception("Incorrect password");
+            }
+            ToastMessage("Login successfull.");
+            nm.NavigateTo("\\staff\\");
+        }
+        catch
+       (Exception ex)
+        {
+            clearFields();
+            ToastMessage(ex.Message);
+            
+        }
+    }
+   
+
+    private void clearFields()
+    {
+        UserName = "";
+        Password = "";
+       
+    }
+}

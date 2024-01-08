@@ -1,0 +1,46 @@
+﻿@page "/commonFile"
+@using CommunityToolkit.Maui.Alerts;
+@using CommunityToolkit.Maui.Core;
+@using System.Security.Cryptography;
+@using System.Text;
+
+<h3>common</h3>
+
+@code {
+    public const string AdminsFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\admins.json";
+    public const string StaffsFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\staffs.json";
+    public const string CoffeesFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\coffee.json";
+    public const string CoffeeTopingsFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\topings.json";
+    public const string memberFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\member.json";
+    public const string OrderFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\orders.json";
+    public const string OrderCoffeeFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\orders_coffee.json";
+    public const string OrderCoffeeAddInsFilePath = "C:\\Users\\Acer\\Desktop\\college\\year 3\\Application development\\coursework\\orders_coffee_addins.json";
+    public static async void ToastMessage(string msg)
+    {
+        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        string text = msg;
+        ToastDuration duration = ToastDuration.Short;
+        double fontSize = 14;
+
+        var toast = Toast.Make(text, duration, fontSize);
+
+        await toast.Show(cancellationTokenSource.Token);
+    }
+
+    public static string HashPassword(string password)
+    {
+        using (SHA256 sha256 = SHA256.Create())
+        {
+            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < hashedBytes.Length; i++)
+            {
+                builder.Append(hashedBytes[i].ToString("x2"));
+            }
+
+            return builder.ToString();
+        }
+    }
+}
+    

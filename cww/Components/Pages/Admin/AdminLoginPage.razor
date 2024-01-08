@@ -1,0 +1,95 @@
+﻿@page "/login/admin"
+@using static cww.Resources.common.Common
+ 
+@using CommunityToolkit.Maui.Alerts;
+@using CommunityToolkit.Maui.Core;
+ 
+@inject NavigationManager nm
+
+  <style media="screen">
+    .home-page {
+        display: flex;
+        width: 100%;
+        height: 90vh;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .title {
+        font-size: 4rem;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    </style>
+
+
+
+<div class="body home-page">
+  <div>
+        <h2 class="  title "> Admin Login</h2>
+        <form class="forms">
+            <label for="email">Email</label>
+            <input type="text" placeholder="Email" @bind="Email">
+            <label for="password">Password</label>
+            <input type="password" placeholder="Password" @bind="Password">
+        </form>
+        <button @onclick="Login" class="form-button">Log In</button>
+  </div>
+   
+ </div>
+
+
+
+@code {
+    public string Email;
+    public string Password;
+  
+
+
+
+    private void Login()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+            {
+                throw new Exception("Please fill out all fields.");
+
+            }
+            AdminController adminController = new AdminController();
+            AdminEntity admins = AdminController.LoadAdmin();
+            
+            if (!admins.Email.Equals(Email))
+            {
+                throw new Exception("Admin Not found");
+            }
+
+            if (!admins.Password.Equals(HashPassword(Password)))
+            {
+                throw new Exception("Incorrect password");
+            }
+            ToastMessage("Login successfull.");
+            nm.NavigateTo("\\admin\\");
+        }
+        catch
+       (Exception ex)
+        {
+            clearFields();
+            ToastMessage(ex.Message);
+            
+        }
+
+         
+
+
+    }
+   
+
+    private void clearFields()
+    {
+        Email = "";
+        Password = "";
+       
+    }
+}

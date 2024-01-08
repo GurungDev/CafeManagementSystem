@@ -1,0 +1,217 @@
+﻿@page "/staff/"
+@using cww.Components.Pages.Coffee
+@using cww.Components.Pages.Topings
+@using cww.Components.Pages.Order
+@layout cww.Components.Layout.StaffLayout
+@using static Resources.common.Common
+
+ <style> 
+     .menu{
+         margin: 0 auto;
+         width: 60%;
+     }
+     .product_menu{
+         display: grid;
+        grid-template-columns: auto auto ;
+        gap: 2em;
+     }
+
+    .product_card{
+        background-color: white;
+        display: flex; 
+        justify-content:center;
+        align-items:center;
+        flex-direction: column;
+        padding: 3em 1em;
+        border-radius: 5px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 1em  0em;
+    }
+
+    .addInsMenu{
+        display: grid;
+        grid-template-columns: auto auto auto auto auto;
+        gap: 2em;
+    }
+
+    .addInsCards{
+        background-color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        padding: 1.7em .6em;
+        border-radius: 5px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      
+    }
+
+    .order_card {
+        border-bottom: 1px solid black;
+        padding: 1em .5em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .order_menu{
+        background-color:white;
+        padding: 3em 1em;
+        border-radius: 5px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 1em 0em;
+    }
+
+    .finalizeOrder{
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .finalizeOrderBtn {
+        background-color: transparent;
+        padding: .2em 3em;
+        border: 1px solid black;
+   
+        transition: .6s;
+   
+    }
+
+     .finalizeOrderBtn:hover {
+         background-color: black;
+         color: white;
+         transition: .3s;
+    }
+     
+ </style>
+
+<div class="body menu">
+    <h2 class="title" style=" margin-top: 1em;">Menu</h2>
+    <div>
+        
+        <div class="product_menu">
+            @foreach (CoffeeEntity coffee in coffeeList)
+            {
+                <div class="product_card btnGroup" style="">
+                    <p>@coffee.Name</p>
+                    <p>Rs @coffee.Price</p>
+                    <button @onclick="() => CreateCoffeeOrder(coffee) " class="" style="border: 1px solid black;">Add Order</button>
+                </div>
+
+            }
+        </div>
+
+
+        @if (GetTopping)
+        {
+            <h2>Adds Ins</h2>
+            <div class="addInsMenu">
+               
+            @foreach (ToppingEntity t in TopingList)
+            {
+
+                    <div class="addInsCards btnGroup">
+                        <p>@t.Name</p>
+                        <p>Rs @t.Price</p>
+                        <button @onclick="() => CreateAddInsOrder(t)" style="border: 1px solid black; ">Add</button>
+                </div>
+            }
+            </div>
+        }
+
+        <div class="order_menu" style="margin-top: 2em;">
+            @if (SelectedCoffeeOrder.Any())
+            {
+                <h1> Order list</h1>
+                @foreach (CoffeeEntity coffee in SelectedCoffeeOrder)
+                {
+                    <div class="order_card">
+                        <span>@coffee.Name</span>
+                        <span>Price Rs @coffee.Price</span>
+                    </div>
+                }
+                <p style="margin-top: 1em; padding: 0em 0.5em;">Total: Rs @TotalPrice</p>
+            }
+
+           
+
+            <div class="finalizeOrder">
+                <form class="forms " style="  width: 60%;">
+                    <label for="PhoneNumber">PhoneNumber</label>
+                    <input type="number" placeholder="PhoneNumber" @bind="PhoneNumber" style="width: 100%; ">
+               </form>
+                <button @onclick="() => CheckOut()" class="finalizeOrderBtn">
+                    Finalize Order
+                </button>
+            </div>
+
+        </div>
+     
+    </div>
+    
+</div>
+@code {
+ 
+    public bool GetTopping = false;
+    public List<CoffeeEntity> coffeeList = CoffeeController.Loadcoffees();
+    public List<ToppingEntity> TopingList = ToppingController.Loadtoppings();
+    public List<OrderCoffeeEntity> CoffeeOrderedList = new List<OrderCoffeeEntity>();
+    public List<CoffeeEntity> SelectedCoffeeOrder = new List<CoffeeEntity>();
+    OrderCoffeeEntity coffeeOrder;
+    public int TotalPrice = 0;
+    public int PhoneNumber = 0;
+
+    public void CreateCoffeeOrder(CoffeeEntity coffee)
+    {
+        try
+        {
+            coffeeOrder = OrderCoffeeController.CreateOrderCoffee(coffee.Id); //create a order for coffee
+            TotalPrice += coffee.Price;
+            CoffeeOrderedList.Add(coffeeOrder); 
+            SelectedCoffeeOrder.Add(coffee);
+            ToastMessage("Coffee order Added");
+            GetTopping = true;
+        }catch(Exception ex)
+        {
+            ToastMessage(ex.Message ?? "Couldn't take coffee order");
+        } 
+    }
+
+    public void CreateAddInsOrder(ToppingEntity topping)
+    {
+        OrderCoffeeAddInsController.CreateOrderCoffeeAddIns(coffeeOrder.Id, topping.Id);
+        TotalPrice += topping.Price;
+        ToastMessage(  "Add ins order Added");
+    }
+    public void CheckOut()
+    {
+        try
+        {
+            if (PhoneNumber == 0 || TotalPrice == 0)
+            {
+                throw new Exception("Phone number and order must be taken before Finalizing order");
+            }
+            OrderEntity order = OrderController.CreateOrder(PhoneNumber, TotalPrice);
+            OrderCoffeeController.FinalizeCoffeeOrder(CoffeeOrderedList, order.Id);
+            ToastMessage("Order Finalzied");
+            ClearFields();
+        }
+        catch (Exception ex)
+        {
+            ToastMessage(ex.Message ?? "Couldn't take coffee order");
+        }
+    }
+
+    public void ClearFields()
+    {
+        TotalPrice = 0;
+        PhoneNumber = 0;
+        CoffeeOrderedList = new List<OrderCoffeeEntity>();
+        SelectedCoffeeOrder = new List<CoffeeEntity>();
+        GetTopping = false;
+    }
+
+ 
+    
+    
+}

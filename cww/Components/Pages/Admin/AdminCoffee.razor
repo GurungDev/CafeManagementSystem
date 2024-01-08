@@ -1,0 +1,124 @@
+﻿@page "/admin/coffee"
+@using cww.Components.Pages.Coffee
+@layout cww.Components.Layout.AdminLayout
+@using static Resources.common.Common
+<style media="screen">
+  
+
+</style>
+s
+<div class="body home-page">
+ <div> 
+        <h2 class="title">Coffee Type</h2>
+        <form class=" forms">
+
+            <label for="Name">Name</label>
+            <input type="text" placeholder="Name" @bind="Name">
+            <label for="Price">Price</label>
+            <input type="number" placeholder="Price" @bind="Price">
+        </form>
+        <div class="btnGroup">
+            <button @onclick="Post">Create coffees</button>
+            <button @onclick="Getcoffees">
+                @{
+                    if (getcoffee)
+                    {
+                        <span>Hide Coffees</span>
+                    }
+                    else
+                    {
+
+                        <span>Display Coffees</span>
+                    }
+                }
+            </button>
+        </div>
+ </div>
+
+</div>
+
+
+@if (getcoffee)
+{
+
+    <div class="display_section">
+        <h2>Coffee List</h2>
+        <div class="custom_table">
+            <div class="header">
+                <span>Name </span>
+                <span> Price </span>
+         
+                <span> Action </span>
+            </div>
+            @foreach (var coffee in coffeeList)
+            {
+                <div class="rows">
+                    <span>@coffee.Name </span>
+                    
+                    <input type="number" @bind="coffee.Price" />
+                    <button @onclick="()=>Update(coffee)">Update</button>
+                </div>
+            }
+        </div>
+
+    </div>
+
+}
+
+
+@code {
+    public string Name;
+    public int Price = 0;
+ 
+    public bool getcoffee;
+    public List<CoffeeEntity> coffeeList;
+    CoffeeController coffeeController = new CoffeeController();
+
+    private void Update(CoffeeEntity coffee)
+    {
+        try
+        {
+            
+            string msg = CoffeeController.UpdatePrice(coffee.Id, coffee.Price);
+            ToastMessage(msg);
+        
+        }
+        catch (Exception ex)
+        {
+            ToastMessage(ex.Message);
+
+        }
+
+    }
+
+    private void Post()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(Name) || Price == 0)
+            {
+                throw new Exception("Please fill out all fields.");
+
+            }
+            coffeeController.Createcoffee(Name, Price);
+            ToastMessage("coffee registration Success.");
+            clearFields();
+        }
+        catch (Exception ex)
+        {
+            clearFields();
+            ToastMessage(ex.Message ?? "coffee registration failed.");
+        }
+    }
+
+    private void Getcoffees()
+    {
+        coffeeList = CoffeeController.Loadcoffees();
+        getcoffee = !getcoffee;
+    }
+    private void clearFields()
+    {
+        Name = "";
+        Price = 0;
+    }
+}

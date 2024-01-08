@@ -1,0 +1,43 @@
+﻿@page "/admin/order"
+@using cww.Components.Pages.Order
+@layout cww.Components.Layout.AdminLayout
+
+<style>
+    td, th{
+        text-align:center;
+    
+       width: 100%;
+
+    }
+</style>
+@if (CoffeeList.Any())
+{
+    <div class="display_section" style="margin-top: 5em;">
+        <h2>Coffee Add-ins List</h2>
+        <table class="custom_table" style="text-align:center; margin-top: 2em;">
+            <tr class="header"  >
+                <th> Phone Number </th>
+                <th>Total Amount </th>
+                <th> Date </th>
+            </tr>
+            @foreach (OrderEntity order in CoffeeList)
+            {
+                <tr class="rows">
+              
+                 
+                    <td>@order.PhoneNumber </td>
+                    <td>@order.TotalAmount </td>
+                    <td>@order.OrderDate </td>
+                  
+                </tr>
+            }
+        </table>
+
+    </div>
+
+}
+@code {
+
+    public List<OrderEntity> CoffeeList = OrderController.LoadOrder();
+
+}

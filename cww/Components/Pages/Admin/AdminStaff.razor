@@ -1,0 +1,132 @@
+﻿@page "/admin/staff"
+@using cww.Components.Pages.Staffs
+@layout cww.Components.Layout.AdminLayout
+@using static Resources.common.Common
+ 
+
+<style media="screen">
+    .home-page {
+        display: flex;
+        width: 100%;
+        height: 90vh;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .title {
+        font-size: 4rem;
+        text-align: center;
+        font-weight: 500;
+    }
+
+ 
+       
+</style>
+
+
+<div class="body home-page">
+
+    <div >
+        <h2 class="title">Add Staffs</h2>
+        <form class="forms">
+            
+
+            <label for="userName">UserName</label>
+            <input type="text" placeholder="UserName" @bind="UserName">
+            <label for="password">Password</label>
+            <input type="password" placeholder="Password" @bind="Password">
+           
+        </form>
+      
+        <div style="" class="btnGroup">
+            <button @onclick="Post">Register Staffs</button>
+            <button @onclick="GetStaffs">
+                @{
+                    if (getStaff)
+                    {
+                        <span>Hide Staffs</span>
+                    }
+                    else
+                    {
+
+                        <span>Display Staffs</span>
+                    }
+                }
+            </button>
+        </div>
+    </div>
+   
+
+</div>
+
+
+ 
+@if (getStaff)
+{
+
+    <div class="display_section">
+        <h2>Staff List</h2>
+        <div class="custom_table">
+            <div class="header">
+                <span>Id </span>
+                <span>UserName </span>
+            </div>
+            @foreach (var staff in StaffList)
+            {
+                <div class="rows">
+                    <span>@staff.id </span>
+                    <span>@staff.UserName </span>
+                </div>
+            }
+        </div>
+
+    </div>
+
+}
+@code {
+    public string UserName;
+    public string Password;
+    public bool getStaff;
+    public StaffController staffController = new StaffController();
+    public List<StaffEntity> StaffList;
+ 
+    private void Post()
+    {
+        try
+        {
+            StaffList = staffController.Loadstaffs();
+            if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
+            {
+                throw new Exception("Please fill out all fields.");
+
+            }
+             StaffEntity verify = StaffList.Find((staff) => staff.UserName.Equals(UserName));
+       
+            if(verify != null)
+            {
+                throw new Exception("Staff Already exist");
+            }
+            staffController.CreateStaff(UserName, Password);
+            ToastMessage("Staff registration Success.");
+            clearFields();
+        }
+        catch(Exception ex)
+        {
+            clearFields();
+            ToastMessage(ex.Message ?? "Staff registration failed.");
+        }
+
+    }
+
+    private void GetStaffs()
+    {
+        StaffList = staffController.Loadstaffs();
+        getStaff = !getStaff;
+    }
+    private void clearFields()
+    {
+        UserName = "";
+        Password = "";
+    }
+
+}
